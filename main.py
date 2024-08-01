@@ -4,7 +4,7 @@ import os
 from moviepy.config import change_settings
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 from openai import OpenAI
-from pytube import YouTube
+import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import SRTFormatter
 import time
@@ -15,6 +15,8 @@ class YouTubeSegmentDownloader:
         change_settings({"IMAGEMAGICK_BINARY": imagemagick_binary_path})
         self.client = OpenAI(api_key=self.api_key)
         self.output_path = None
+
+
 
     def segment_transcript(self, full_transcript, max_length=500):
         words = full_transcript.split()  # Split the transcript into words
@@ -81,7 +83,7 @@ class YouTubeSegmentDownloader:
                 return
 
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
+                model="gpt-4o-mini-2024-07-18",
                 messages=[
                     {
                         "role": "system",
@@ -142,11 +144,31 @@ class YouTubeSegmentDownloader:
 
             segment_duration = end_time - start_time
 
-        yt = YouTube(youtube_url)
-        stream = yt.streams.get_highest_resolution()
-        video_path = stream.download()
-        start_time = start_time-1
+        def get_filename(url, ydl_opts):
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                return ydl.prepare_filename(info)
+        print("Fetching video")
+        print(youtube_url)
+        ydl_opts = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'outtmpl': '%(title)s.%(ext)s'
+        }
 
+        try:
+            # Get the filename without downloading
+            video_path = get_filename(youtube_url, ydl_opts)
+
+            if os.path.exists(video_path):
+                print(f'Video already exists at: {video_path}')
+            else:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([youtube_url])
+                print(f'Video downloaded successfully to: {video_path}')
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+        start_time = start_time-1
+        print("Cropping")
         # Load the video clip and crop to 9:16 aspect ratio
         clip = VideoFileClip(video_path).subclip(start_time, end_time)
         clip_cropped = self.crop_clip_to_9_16(clip)  # Cropping to 9:16
@@ -156,7 +178,7 @@ class YouTubeSegmentDownloader:
         safe_title = re.sub(r'[<>:"/\\|?*]', '', title).replace(' ', '_')
         # Format the output path using the title
         output_path = f"{safe_title}.mp4"
-
+        print("Writing video file.")
         # Write the video file using the new output path
         clip_cropped.write_videofile(output_path, codec="libx264")
         self.output_path = output_path
