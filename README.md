@@ -25,11 +25,8 @@ pip install -r requirements.txt
 ## Usage 🚀
 
 1. Configure your `.env` file based on the `.env.example`.
-2. Run `main.py` to start the video processing.
+2. Configure and run `app.py` to start the video processing.
 
-## Contribution 🤝
-
-Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License 📄
 
