@@ -10,15 +10,17 @@ AutoMedia is a tool that creates short-form videos from existing content, ideal 
 
 ## Example 🎬
 
-Check out an example of a clip created using AutoMedia: [Watch here](https://www.youtube.com/shorts/TazQGh9gc9Y)
+Check out an example of a clip created using AutoMedia:
+
+[![AutoMedia Example](https://img.youtube.com/vi/TazQGh9gc9Y/0.jpg)](https://www.youtube.com/shorts/TazQGh9gc9Y)
 
 ## Installation 📦
 
-\```bash
+```bash
 git clone https://github.com/Corzed/AutoMedia.git
 cd AutoMedia
 pip install -r requirements.txt
-\```
+```
 
 ## Usage 🚀
 
