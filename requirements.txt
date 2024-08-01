@@ -4,3 +4,4 @@ openai~=1.23.6
 pytube~=15.0.0
 selenium~=4.20.0
 whisper~=1.1.10
+yt-dlp~=2024.7.9
